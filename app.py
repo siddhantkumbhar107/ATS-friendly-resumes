@@ -167,7 +167,7 @@ if generate_button:
                 mime="application/pdf"
             )
         else:
-            st.warning("PDF generation failed. Please check your HTML template structure.")
+            st.warning("PDF export is not available right now.")
 
     except FileNotFoundError:
         st.error(f"Template HTML or CSS file not found for template {selected_template_id}.")
