@@ -3,76 +3,50 @@ from jinja2 import Template
 
 def generate_resume_text(data):
     return f"""
-{data['full_name']}
-Email: {data['email']}
-Phone: {data['phone']}
-LinkedIn: {data['linkedin']}
-GitHub: {data['github']}
-Address: {data['address']}
+{data.get('full_name', '')}
+Email: {data.get('email', '')}
+Phone: {data.get('phone', '')}
+LinkedIn: {data.get('linkedin', '')}
+GitHub: {data.get('github', '')}
+Address: {data.get('address', '')}
 
-SUMMARY
-{data['summary']}
+PROFESSIONAL SUMMARY
+{data.get('summary', '')}
 
 EDUCATION
-{data['education']}
+{data.get('education', '')}
 
 SKILLS
-{data['skills']}
+{data.get('skills', '')}
 
 PROJECTS
-{data['projects']}
+{data.get('projects', '')}
 
 EXPERIENCE
-{data['experience']}
+{data.get('experience', '')}
 
 CERTIFICATIONS
-{data['certifications']}
+{data.get('certifications', '')}
 
 ACHIEVEMENTS
-{data['achievements']}
+{data.get('achievements', '')}
 """.strip()
 
 
-def get_template_html(template_name, data):
-    base_html = """
-    <html>
-    <head>
-        <style>
-            body { font-family: Arial, sans-serif; margin: 30px; }
-            h1 { text-align: center; margin-bottom: 5px; }
-            .contact { text-align: center; font-size: 12px; margin-bottom: 20px; }
-            h2 { border-bottom: 1px solid #333; padding-bottom: 4px; margin-top: 20px; }
-            p { font-size: 13px; line-height: 1.5; }
-        </style>
-    </head>
-    <body>
-        <h1>{{ full_name }}</h1>
-        <div class="contact">
-            {{ email }} | {{ phone }} | {{ linkedin }} | {{ github }} | {{ address }}
-        </div>
+def load_template(template_id):
+    with open(f"html_templates/template_{template_id}.html", "r", encoding="utf-8") as f:
+        html = f.read()
 
-        <h2>Professional Summary</h2>
-        <p>{{ summary }}</p>
+    with open(f"assets/css/template_{template_id}.css", "r", encoding="utf-8") as f:
+        css = f.read()
 
-        <h2>Education</h2>
-        <p>{{ education }}</p>
+    # Inject CSS into HTML
+    html = html.replace("</head>", f"<style>{css}</style></head>")
 
-        <h2>Skills</h2>
-        <p>{{ skills }}</p>
+    return html
 
-        <h2>Projects</h2>
-        <p>{{ projects }}</p>
 
-        <h2>Experience</h2>
-        <p>{{ experience }}</p>
-
-        <h2>Certifications</h2>
-        <p>{{ certifications }}</p>
-
-        <h2>Achievements</h2>
-        <p>{{ achievements }}</p>
-    </body>
-    </html>
-    """
-    template = Template(base_html)
+def get_template_html(template_id, data):
+    html = load_template(template_id)
+    template = Template(html)
     return template.render(**data)
