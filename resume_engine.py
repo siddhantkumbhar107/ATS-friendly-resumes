@@ -40,9 +40,7 @@ def load_template(template_id):
     with open(f"assets/css/template_{template_id}.css", "r", encoding="utf-8") as f:
         css = f.read()
 
-    # Inject CSS into HTML
     html = html.replace("</head>", f"<style>{css}</style></head>")
-
     return html
 
 
