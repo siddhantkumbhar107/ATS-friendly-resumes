@@ -1,0 +1,6 @@
+streamlit
+fpdf
+python-docx
+PyPDF2
+jinja2
+xhtml2pdf
