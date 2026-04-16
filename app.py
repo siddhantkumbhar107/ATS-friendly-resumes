@@ -3,11 +3,12 @@ from templates_data import TEMPLATE_LIST
 from ats_logic import calculate_ats_score
 from resume_engine import generate_resume_text, get_template_html
 from pdf_export import convert_html_to_pdf
+from resume_parser import read_uploaded_resume, extract_resume_sections
 
 st.set_page_config(page_title="Resume Builder Pro", page_icon="📄", layout="wide")
 
 st.title("📄 Resume Builder Pro with ATS Optimizer")
-st.write("Create ATS-friendly resumes and choose from multiple resume designs.")
+st.write("Upload your old resume or fill details manually, then generate a new ATS-friendly resume.")
 
 # -----------------------------
 # Sidebar Template Selection
@@ -21,6 +22,34 @@ selected_template_id = template_options[selected_template_label]
 st.sidebar.write(f"Total Templates Available: {len(TEMPLATE_LIST)}")
 
 # -----------------------------
+# Upload Resume
+# -----------------------------
+st.subheader("Upload Existing Resume")
+uploaded_resume = st.file_uploader("Upload Resume (.txt, .pdf, .docx)", type=["txt", "pdf", "docx"])
+
+uploaded_text = ""
+sections = {
+    "summary": "",
+    "education": "",
+    "skills": "",
+    "projects": "",
+    "experience": "",
+    "certifications": "",
+    "achievements": ""
+}
+
+if uploaded_resume is not None:
+    try:
+        uploaded_text = read_uploaded_resume(uploaded_resume)
+        if uploaded_text.strip():
+            sections = extract_resume_sections(uploaded_text)
+            st.success("Resume uploaded and parsed successfully.")
+        else:
+            st.warning("Resume uploaded, but no text could be extracted.")
+    except Exception as e:
+        st.error(f"Error reading uploaded resume: {e}")
+
+# -----------------------------
 # Resume Input Form
 # -----------------------------
 col1, col2 = st.columns(2)
@@ -32,15 +61,15 @@ with col1:
     linkedin = st.text_input("LinkedIn")
     github = st.text_input("GitHub")
     address = st.text_input("Address")
-    summary = st.text_area("Professional Summary", height=140)
-    education = st.text_area("Education", height=140)
-    skills = st.text_area("Skills", height=140)
+    summary = st.text_area("Professional Summary", value=sections["summary"], height=140)
+    education = st.text_area("Education", value=sections["education"], height=140)
+    skills = st.text_area("Skills", value=sections["skills"], height=140)
 
 with col2:
-    projects = st.text_area("Projects", height=160)
-    experience = st.text_area("Experience", height=160)
-    certifications = st.text_area("Certifications", height=110)
-    achievements = st.text_area("Achievements", height=110)
+    projects = st.text_area("Projects", value=sections["projects"], height=160)
+    experience = st.text_area("Experience", value=sections["experience"], height=160)
+    certifications = st.text_area("Certifications", value=sections["certifications"], height=110)
+    achievements = st.text_area("Achievements", value=sections["achievements"], height=110)
     job_desc = st.text_area("Paste Job Description", height=220)
 
 # -----------------------------
@@ -96,7 +125,6 @@ if generate_button:
         if job_desc.strip():
             score, matched_keywords, missing_keywords = calculate_ats_score(resume_text, job_desc)
 
-            # Internal project logic for higher ATS-style score
             if score >= 90 and len(missing_keywords) <= 2:
                 score = 100
         else:
@@ -123,7 +151,6 @@ if generate_button:
         st.subheader("Resume Preview")
         st.components.v1.html(html_preview, height=900, scrolling=True)
 
-        # TXT Download
         st.download_button(
             label="Download Resume as TXT",
             data=resume_text,
@@ -131,7 +158,6 @@ if generate_button:
             mime="text/plain"
         )
 
-        # PDF Download
         pdf_bytes = convert_html_to_pdf(html_preview)
         if pdf_bytes:
             st.download_button(
